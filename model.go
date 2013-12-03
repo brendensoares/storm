@@ -9,14 +9,31 @@ import (
 
 type Model struct {
 	context interface{}
+	container string
 }
 
 // Factory configures a new model instance
 func Factory(context interface{}) interface{} {
-	if contextValue := reflect.ValueOf(context); contextValue.Kind() != reflect.Ptr {
+	if contextPointerValue := reflect.ValueOf(context); contextPointerValue.Kind() != reflect.Ptr {
 		panic("Context must be pointer")
 	} else {
-		contextValue.Elem().Field(0).Set(reflect.ValueOf(&Model{context}))
+		// Get addressable value for context
+		contextValue := contextPointerValue.Elem()
+		// Make sure the context declares a Model instance
+		if modelStructField, found := contextValue.Type().FieldByName("Model"); !found {
+			panic("Model struct field missing")
+		} else {
+			// Model struct field is present
+			model := contextValue.FieldByName("Model").Addr().Interface().(*Model)
+			// Set context reference so model methods can access context model fields
+			model.context = context
+			// Configure the model's container name, default to override tag value if present
+			if model.container = modelStructField.Tag.Get("container"); model.container == "" {
+				// No container override found, use the context struct name as the container
+				// TODO: pluralize
+				model.container = contextValue.Type().Name()
+			}
+		}
 	}
 	return context
 }
@@ -24,7 +41,7 @@ func Factory(context interface{}) interface{} {
 // Save will create or update changed fields on the model to the backend
 // database.
 // Save accepts either no arguments or a single map of key/value pairs
-func (self *Model) Save(args ...interface{}) (saveError error, id string) {
+func (self *Model) Save(args ...interface{}) (id interface{}, saveError error) {
 	if len(args) == 0 {
 		// Use internal fields
 		// Iterate all fields via reflection
@@ -43,7 +60,10 @@ func (self *Model) Save(args ...interface{}) (saveError error, id string) {
 			createQuery[fieldType.Name] = fieldValue.Interface()
 		}
 		// Create new database record
-		drivers[activeDriver].Create(modelType.Name(), createQuery)
+		if id, saveError = drivers[activeDriver].Create(self.container, createQuery); saveError != nil {
+			fmt.Println("CREATE ERROR:", saveError)
+			return
+		}
 	} else {
 		// Save provided fields locally and in database
 		// Look for single map argument

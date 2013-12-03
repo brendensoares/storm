@@ -19,7 +19,7 @@ type Driver interface {
 	Config() string
 
 	// Create one new entity and return its identifier or return an error
-	Create(container string, query Query) (id string, requestError error)
+	Create(container string, query Query) (id interface{}, requestError error)
 
 	// Read a single entity and return its representation or return an error
 	// Must support semantic filtering
@@ -27,7 +27,7 @@ type Driver interface {
 
 	// Read multiple entities and return their representations or return an error
 	// Must support semantic filtering
-	ReadMany(container string, conditions string) (results interface{}, requestError error)
+	ReadMany(container string, conditions []interface{}) (results interface{}, requestError error)
 
 	// Update an entity's representation or return an error
 	Update(container string, id interface{}, query Query) (requestError error)

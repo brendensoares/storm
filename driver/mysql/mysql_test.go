@@ -6,7 +6,7 @@ import (
 )
 
 type User struct {
-	*storm.Model
+	storm.Model `container:"users"`
 	FirstName string
 	LastName string
 	Email string

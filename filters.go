@@ -14,6 +14,7 @@ type (
 	Where FilterTriple
 	And Where
 	Or And
-	All interface{}
+	ConditionSet []FilterTriple
+	All ConditionSet
 	Any All
 )
