@@ -1,6 +1,6 @@
-# storm
+# STORM
 
-STORM is the Semantically Terse Object Relational Mapping for Go
+STORM is Semantically Terse Object Relational Mapping for Go
 
 
 ## WARNING!
@@ -102,11 +102,15 @@ for _, post := range matchedPosts {
 
 #### Loaded Object
 
+```go
 post.Delete()
+```
 
 ### Many Objects By Criteria
 
+```go
 NewPost().Has("author", commentAuthor).Delete()
+```
 
 
 ### Relationships
@@ -120,7 +124,7 @@ if post.Load("Categories") {
 	categoryTitle := post.Categories[0].Title
 }
 if post.Load("Comments") {
-	commentAuthor := post.Comments.[0].Author.DisplayName
+	commentAuthor := post.Comments[0].Author.DisplayName
 }
 ```
 
