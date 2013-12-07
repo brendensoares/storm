@@ -41,7 +41,7 @@ func Factory(context interface{}) interface{} {
 // Save will create or update changed fields on the model to the backend
 // database.
 // Save accepts either no arguments or a single map of key/value pairs
-func (self *Model) Save(args ...interface{}) (id interface{}, saveError error) {
+func (self *Model) Save(args ...interface{}) (saveError error) {
 	if len(args) == 0 {
 		// Use internal fields
 		// Iterate all fields via reflection
@@ -60,9 +60,14 @@ func (self *Model) Save(args ...interface{}) (id interface{}, saveError error) {
 			createQuery[fieldType.Name] = fieldValue.Interface()
 		}
 		// Create new database record
-		if id, saveError = drivers[activeDriver].Create(self.container, createQuery); saveError != nil {
+		var newId interface{}
+		if newId, saveError = drivers[activeDriver].Create(self.container, createQuery); saveError != nil {
+			// Failure
 			fmt.Println("CREATE ERROR:", saveError)
 			return
+		} else {
+			// Success, save new id to model
+			self.Id = newId
 		}
 	} else {
 		// Save provided fields locally and in database
