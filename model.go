@@ -67,7 +67,13 @@ func (self *Model) Save(args ...interface{}) (saveError error) {
 			return
 		} else {
 			// Success, save new id to model
-			self.Id = newId
+			if idField := reflect.ValueOf(self.context).Elem().FieldByName("Id"); !idField.IsValid() {
+				// Failure
+				panic(fmt.Sprintf("`Id` field not declared on %s", reflect.ValueOf(self.context).Elem().Type().Name()))
+			} else {
+				// Success
+				idField.Set(reflect.ValueOf(newId))
+			}
 		}
 	} else {
 		// Save provided fields locally and in database
