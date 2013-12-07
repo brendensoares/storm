@@ -43,6 +43,10 @@ type Post struct {
 	Author *Author        `relation:"belongsTo" key:"author_id"`
 	ParentPost *Post      `relation:"hasOne" key:"parent_post_id"`
 }
+
+func NewPost() *Post {
+	return storm.Factory(&Post{}).(*Post)
+}
 ```
 
 
