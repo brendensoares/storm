@@ -23,7 +23,25 @@ That said, please contribute your ideas and feedback!
 
 ## Roadmap Features By Example
 
-### Define Model
+### Map Database Schema To Models
+
+STORM's object generator is important because it allows a developer to use the database schema as the
+authority for the design of the models. You can consider the generator as a tool to create a schema cache
+that would otherwise be done dynamically.
+
+Data containers (e.g. SQL table) are mapped to Go Structs and container fields (e.g. SQL columns) are mapped
+to struct fields on each generated struct.
+
+To generate a cache of your MySQL database's schema, simply run:
+`storm generate mysql -host localhost -user dbuser -p dbpass -name dbname`
+
+From there, you can customize the object's definition as long as the meta data remains so that STORM can properly
+translate object data to the database.
+
+### Define Model Struct
+
+A generated STORM model is composed of typical Go data types along with tag-based meta data. A model could look
+something like this:
 
 ```go
 type Post struct {
@@ -49,6 +67,16 @@ func NewPost() *Post {
 }
 ```
 
+### Validate Fields
+
+```go
+func (self *Post)Validate() bool {
+	if self.len(Content) < 10000 {
+		return true
+	}
+	return false
+}
+```
 
 ### Create
 
@@ -68,7 +96,6 @@ if post.IsLoaded() {
 	}
 }
 ```
-
 
 ### Read
 
@@ -101,7 +128,6 @@ for _, post := range matchedPosts {
 }
 ```
 
-
 ### Delete
 
 #### Loaded Object
@@ -115,7 +141,6 @@ post.Delete()
 ```go
 NewPost().Has("author", commentAuthor).Delete()
 ```
-
 
 ### Relationships
 
@@ -147,7 +172,6 @@ if post.Author != nil {
 	authorName := post.Author.DisplayName
 }
 ```
-
 
 #### Add
 
@@ -205,4 +229,11 @@ post.Author = nil
 ```go
 post.ParentPost = nil
 ```
+
+
+#### Trigger Events
+
+##### Save
+
+##### Delete
 
