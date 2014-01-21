@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"fmt"
 	"github.com/brendensoares/storm/driver"
+	"time"
 )
 
 type Model struct {
@@ -55,9 +56,16 @@ func (self *Model) Save(args ...interface{}) (saveError error) {
 			if fieldType.Name == "Model" {
 				continue
 			}
+			if fieldType.Tag.Get("ignore") != "" {
+				continue
+			}
 			// TODO: ignore non-data fields
 			fmt.Println("DEBUG field:", fieldType, fieldValue)
 			createQuery[fieldType.Name] = fieldValue.Interface()
+		}
+		// Populate creation date, if present
+		if _, hasCreatedAt := createQuery["CreatedAt"]; hasCreatedAt {
+			createQuery["CreatedAt"] = time.Now()
 		}
 		// Create new database record
 		var newId interface{}
